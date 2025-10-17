@@ -12,6 +12,11 @@ license = "MIT"
 authors = ["PRO-2684"]
 
 [dependencies]
+compio = { version = "0.16.0", features = ["macros"] }
+cyper = { version = "0.5.0", features = ["json"] }
+serde = "1.0.228"
+thiserror = "2.0.17"
+url = "2.5.7"
 
 [[bin]]
 name = "ucas-iclass"

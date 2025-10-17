@@ -57,4 +57,5 @@ TODO
 
 ## 🎉 Credits
 
-TODO
+- https://github.com/fontlos/buaa-api/
+- https://github.com/zeroduhyy/iclass_buaa/
