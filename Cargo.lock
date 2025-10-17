@@ -1498,6 +1498,7 @@ dependencies = [
  "compio",
  "cyper",
  "serde",
+ "serde_json",
  "thiserror",
  "url",
 ]

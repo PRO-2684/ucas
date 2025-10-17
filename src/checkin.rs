@@ -1,21 +1,50 @@
 //! Check in to given class.
 
-use super::{IClass, IClassError};
+use super::{IClass, IClassError, Response};
 use serde::Deserialize;
+use serde_json::Value;
+use std::time::{SystemTime, UNIX_EPOCH};
 
 /// Check-in response structure.
 #[derive(Clone, Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct CheckInResult {}
+pub struct CheckInResult {
+    // TODO: Fill fields, remove `serde_json` and replace `Value` with this struct.
+}
 
 impl IClass {
-    /// Checks in to a class with given `schedule_uuid`.
+    /// Checks in the schedule with given uuid.
     ///
     /// # Errors
     ///
     /// See [`IClassError`].
-    pub async fn check_in(&self, schedule_uuid: &str) -> Result<CheckInResult, IClassError> {
+    ///
+    /// # Panics
+    ///
+    /// This function will panic if system time is before [`UNIX_EPOCH`].
+    pub async fn check_in(&self, schedule_uuid: &str) -> Result<Value, IClassError> {
         // /app/course/stu_scan_sign.action?timeTableId={schedule_uuid}&timestamp={timestamp}
-        todo!();
+        let user_session = self.get_user_session()?;
+        let url = self.api_root.join("app/course/stu_scan_sign.action")?;
+        let timestamp = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .expect("Time went backwards")
+            .as_millis();
+        let response: Response<Value> = self
+            .client
+            .get(url)?
+            .header("sessionId", &user_session.session_id)?
+            .query(&[
+                ("timeTableId", schedule_uuid),
+                ("timestamp", &timestamp.to_string()),
+                ("id", user_session.id.as_str()),
+            ])?
+            .send()
+            .await?
+            .json()
+            .await?;
+        let check_in_result = response.into_result()?;
+
+        Ok(check_in_result)
     }
 }

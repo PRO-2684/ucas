@@ -30,8 +30,8 @@ pub struct Semester {
 #[derive(Clone, Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Course {
-    /// Course ID in iClass system.
-    pub id: String,
+    // /// Course ID in iClass system.
+    // pub id: String,
     /// Course ID as we all know.
     #[serde(rename = "courseNum")]
     pub course_id: String,
@@ -173,14 +173,14 @@ impl Display for Course {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let Self {
             course_name,
-            id,
+            course_id,
             teacher_name,
             classroom_name,
             ..
         } = self;
         write!(
             f,
-            "{course_name} ({id}) - {teacher_name} @ {classroom_name}"
+            "{course_name} ({course_id}) - {teacher_name} @ {classroom_name}"
         )
     }
 }
@@ -189,11 +189,12 @@ impl Display for Schedule {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let Self {
             course,
+            uuid,
             begin_time,
             end_time,
             ..
         } = self;
-        write!(f, "[{begin_time} ~ {end_time}] {course}",)
+        write!(f, "[{uuid} {begin_time} ~ {end_time}] {}", course.course_name)
     }
 }
 

@@ -40,5 +40,12 @@ async fn main() -> Result<(), IClassError> {
         println!("{daily_schedule}");
     }
 
+    if let Some(uuid) = args.next() {
+        let check_in_result = iclass.check_in(&uuid).await?;
+        println!("\nCheck-in result for schedule {uuid}: {check_in_result:?}");
+    }
+
+    // Check in result for an outdated schedule: Object {"stuSignId": String("40221478"), "stuSignStatus": String("1")}
+
     Ok(())
 }
