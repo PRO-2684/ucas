@@ -1,14 +1,12 @@
 //! Query selected courses.
 
-use super::{API_ROOT, IClass, IClassError, Response};
+use super::{IClass, IClassError, Response};
 use serde::Deserialize;
-
-/// Query semester response structure.
-pub type QuerySemesterResult = Vec<Semester>;
 
 /// A semester.
 #[derive(Clone, Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
+#[deprecated(note = "Not used in the mini-app")]
 pub struct Semester {
     /// Semester code.
     pub code: String,
@@ -18,33 +16,65 @@ pub struct Semester {
     pub begin_date: String,
     /// Semester end date.
     pub end_date: String,
-    /// Year status - whether it is the current semester.
-    #[serde(deserialize_with = "super::util::deserialize_str_to_bool")]
-    pub year_status: bool,
+    /// Whether it is the current semester.
+    #[serde(rename = "yearStatus", deserialize_with = "super::util::deserialize_str_to_bool")]
+    pub is_current: bool,
 }
 
-/// Query courses response structure.
+/// A course.
 #[derive(Clone, Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct QueryCoursesResult {}
+pub struct Course {
+    /// Course ID in iClass system.
+    pub id: String,
+    /// Course ID as we all know.
+    #[serde(rename = "courseNum")]
+    pub course_id: String,
+    /// Course name. There may be courses with the same name.
+    pub name: String,
+    /// Course begin date.
+    pub begin_date: String,
+    /// Course end date.
+    pub end_date: String,
+    /// Classroom name.
+    pub classroom_name: String,
+    /// Teacher name.
+    pub teacher_name: String,
+}
 
 impl IClass {
     /// Queries current semester.
-    pub async fn query_semester(&self) -> Result<QuerySemesterResult, IClassError> {
+    #[allow(deprecated, reason = "This is what the API returns")]
+    #[deprecated(note = "Not used in the mini-app")]
+    pub async fn query_semester(&self) -> Result<Vec<Semester>, IClassError> {
         // /app/course/get_base_school_year.action
-        let response: Response<QuerySemesterResult> = self
+        let url = self
+            .api_root
+            .join("app/course/get_base_school_year.action")?;
+        let response: Response<Vec<Semester>> = self.client.get(url)?.send().await?.json().await?;
+        let semesters = response.into_result()?;
+        Ok(semesters)
+    }
+
+    /// Queries selected courses for current semester.
+    pub async fn query_courses(&self) -> Result<Vec<Course>, IClassError> {
+        let Some(login_result) = &self.login_result else {
+            return Err(IClassError::NotLoggedIn);
+        };
+        let url = self
+            .api_root
+            .join("app/my/get_my_course.action")?;
+        let response: Response<Vec<Course>> = self
             .client
-            .get(format!("{API_ROOT}app/course/get_base_school_year.action"))?
+            .get(url)?
+            .header("sessionId", &login_result.session_id)?
+            .query(&[("id", &login_result.id)])? // FIXME: Using form?
             .send()
             .await?
             .json()
             .await?;
-        let semesters = response.into_result()?;
-        Ok(semesters)
-    }
-    /// Queries selected courses for given `semester`.
-    pub async fn query_courses(&self, semester: &str) -> Result<QueryCoursesResult, IClassError> {
-        // /app/choosecourse/get_myall_course.action?xq_code={semester}
-        todo!();
+        let courses = response.into_result()?;
+
+        Ok(courses)
     }
 }

@@ -1,15 +1,16 @@
 //! Login related logic.
 
-use super::{API_ROOT, IClass, IClassError, Response};
+use super::{IClass, IClassError, Response};
 use serde::Deserialize;
 
 impl IClass {
     /// Logs in to the iClass platform.
     pub async fn login(&mut self, username: &str, password: &str) -> Result<(), IClassError> {
         // /app/user/login.action
-        let response: Response<LoginResult> = self
+        let url = self.api_root.join("app/user/login.action")?;
+        let response: Response<UserSessionInfo> = self
             .client
-            .post(format!("{API_ROOT}app/user/login.action"))?
+            .post(url)?
             .query(&[("phone", username), ("password", password)])?
             .send()
             .await?
@@ -22,10 +23,10 @@ impl IClass {
     }
 }
 
-/// Login response structure.
+/// User session information returned after login.
 #[derive(Clone, Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct LoginResult {
+pub struct UserSessionInfo {
     /// ID of the user.
     pub id: String,
     /// Session ID.

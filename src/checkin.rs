@@ -1,6 +1,6 @@
 //! Check in to given class.
 
-use super::{API_ROOT, IClass, IClassError, Response};
+use super::{IClass, IClassError, Response};
 use serde::Deserialize;
 
 /// Check-in response structure.

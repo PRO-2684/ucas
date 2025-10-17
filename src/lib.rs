@@ -12,10 +12,10 @@ mod util;
 
 pub use checkin::CheckInResult;
 use cyper::{Client, Error as CyperError};
-pub use login::LoginResult;
-pub use query::{QueryCoursesResult, QuerySemesterResult, Semester};
+pub use login::UserSessionInfo;
+pub use query::{Course, Semester};
 use serde::Deserialize;
-use url::Url;
+use url::{ParseError, Url};
 
 /// The root URL of the iClass platform.
 pub const API_ROOT: &str = "https://iclass.ucas.edu.cn:8181/";
@@ -23,11 +23,11 @@ pub const API_ROOT: &str = "https://iclass.ucas.edu.cn:8181/";
 /// The iClass struct.
 pub struct IClass {
     /// API root URL.
-    pub api_root: Url,
+    api_root: Url,
     /// The HTTP client.
     client: Client,
     /// Login result.
-    login_result: Option<LoginResult>,
+    pub login_result: Option<UserSessionInfo>,
 }
 
 /// Possible errors when interacting with the iClass platform.
@@ -39,6 +39,9 @@ pub enum IClassError {
     /// The user has not logged in.
     #[error("user not logged in")]
     NotLoggedIn,
+    /// Other API errors.
+    #[error("API error: {0}")]
+    ApiError(String),
     /// Cyper-related error.
     #[error("cyper error: {0}")]
     CyperError(CyperError),
@@ -89,6 +92,12 @@ impl From<CyperError> for IClassError {
     }
 }
 
+impl From<ParseError> for IClassError {
+    fn from(e: ParseError) -> Self {
+        IClassError::CyperError(CyperError::UrlParse(e))
+    }
+}
+
 impl<T> Response<T> {
     /// Converts the response into a [`Result`].
     pub fn into_result(self) -> Result<T, IClassError> {
@@ -101,7 +110,9 @@ impl<T> Response<T> {
                 }
             }
             "106" | "107" => Err(IClassError::AuthenticationFailed),
-            _ => Err(IClassError::DataParsingError),
+            _ => Err(IClassError::ApiError(
+                self.err_msg.unwrap_or_else(|| "Unknown error".to_string()),
+            )),
         }
     }
 }
