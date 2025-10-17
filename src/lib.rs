@@ -4,6 +4,7 @@
 
 #![deny(missing_docs)]
 #![warn(clippy::all, clippy::nursery, clippy::pedantic, clippy::cargo)]
+#![allow(clippy::multiple_crate_versions, reason = "Dependency issues")]
 
 mod checkin;
 mod login;
@@ -13,6 +14,7 @@ mod util;
 pub use checkin::CheckInResult;
 use cyper::{Client, Error as CyperError};
 pub use login::UserSessionInfo;
+#[allow(deprecated, reason = "Re-exporting for potential use")]
 pub use query::{Course, Semester};
 use serde::Deserialize;
 use url::{ParseError, Url};
@@ -70,13 +72,22 @@ pub struct Response<T> {
     pub result: Option<T>,
 }
 
+impl Default for IClass {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl IClass {
     /// Creates a new instance of [`IClass`].
+    #[allow(clippy::missing_panics_doc, reason = "URL is constant and valid")]
+    #[must_use]
     pub fn new() -> Self {
         Self::with_api_root(Url::parse(API_ROOT).unwrap())
     }
 
     /// Creates a new instance of [`IClass`] with given API root URL.
+    #[must_use]
     pub fn with_api_root(url: Url) -> Self {
         Self {
             api_root: url,
@@ -88,27 +99,27 @@ impl IClass {
 
 impl From<CyperError> for IClassError {
     fn from(e: CyperError) -> Self {
-        IClassError::CyperError(e)
+        Self::CyperError(e)
     }
 }
 
 impl From<ParseError> for IClassError {
     fn from(e: ParseError) -> Self {
-        IClassError::CyperError(CyperError::UrlParse(e))
+        Self::CyperError(CyperError::UrlParse(e))
     }
 }
 
 impl<T> Response<T> {
-    /// Converts the response into a [`Result`].
+    /// Converts the response into a [`Result`], translating status codes into errors.
+    ///
+    /// # Errors
+    ///
+    /// See [`IClassError`].
     pub fn into_result(self) -> Result<T, IClassError> {
         match self.status.as_str() {
-            "0" => {
-                if let Some(result) = self.result {
-                    Ok(result)
-                } else {
-                    Err(IClassError::DataParsingError)
-                }
-            }
+            "0" => self
+                .result
+                .map_or_else(|| Err(IClassError::DataParsingError), |result| Ok(result)),
             "106" | "107" => Err(IClassError::AuthenticationFailed),
             _ => Err(IClassError::ApiError(
                 self.err_msg.unwrap_or_else(|| "Unknown error".to_string()),

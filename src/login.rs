@@ -5,6 +5,10 @@ use serde::Deserialize;
 
 impl IClass {
     /// Logs in to the iClass platform.
+    ///
+    /// # Errors
+    ///
+    /// See [`IClassError`].
     pub async fn login(&mut self, username: &str, password: &str) -> Result<(), IClassError> {
         // /app/user/login.action
         let url = self.api_root.join("app/user/login.action")?;

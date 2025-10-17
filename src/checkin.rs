@@ -1,6 +1,6 @@
 //! Check in to given class.
 
-use super::{IClass, IClassError, Response};
+use super::{IClass, IClassError};
 use serde::Deserialize;
 
 /// Check-in response structure.
@@ -9,9 +9,13 @@ use serde::Deserialize;
 pub struct CheckInResult {}
 
 impl IClass {
-    /// Checks in to a class with given `course_id`.
-    pub async fn check_in(&self, course_id: &str) -> Result<CheckInResult, IClassError> {
-        // /app/course/stu_scan_sign.action?courseSchedId={course_id}&timestamp={timestamp}
+    /// Checks in to a class with given `schedule_uuid`.
+    ///
+    /// # Errors
+    ///
+    /// See [`IClassError`].
+    pub async fn check_in(&self, schedule_uuid: &str) -> Result<CheckInResult, IClassError> {
+        // /app/course/stu_scan_sign.action?timeTableId={schedule_uuid}&timestamp={timestamp}
         todo!();
     }
 }

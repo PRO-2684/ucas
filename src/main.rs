@@ -1,6 +1,6 @@
 #![warn(clippy::all, clippy::nursery, clippy::pedantic, clippy::cargo)]
 
-use ucas_iclass::{Course, IClass, IClassError};
+use ucas_iclass::{IClass, IClassError};
 
 #[compio::main]
 async fn main() -> Result<(), IClassError> {
@@ -25,8 +25,19 @@ async fn main() -> Result<(), IClassError> {
     let courses = iclass.query_courses().await?;
     println!("\nCourses in current semester:");
     for course in &courses {
-        let Course { id, name, classroom_name, teacher_name, .. } = course;
-        println!("  {name} ({id}) - {teacher_name} @ {classroom_name}");
+        println!("  {course}");
+    }
+
+    let daily_schedule = iclass.query_daily_schedule("20251017").await?;
+    println!("\nDaily schedule on 2025-10-17:");
+    for schedule in &daily_schedule {
+        println!("  {schedule}");
+    }
+
+    let weekly_schedule = iclass.query_weekly_schedule("20251017").await?;
+    println!("\nWeekly schedule for week of 2025-10-17:");
+    for daily_schedule in &weekly_schedule {
+        println!("{daily_schedule}");
     }
 
     Ok(())
