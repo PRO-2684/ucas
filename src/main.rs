@@ -16,10 +16,10 @@ async fn main() -> Result<(), IClassError> {
 
     let mut iclass = IClass::new();
     iclass.login(&username, &password).await?;
-    let login_result = iclass.login_result.as_ref().unwrap();
+    let user_session = iclass.user_session.as_ref().unwrap();
     println!(
         "Logged in as {} (student_no={}, id={})",
-        login_result.real_name, login_result.student_no, login_result.id
+        user_session.real_name, user_session.student_no, user_session.id
     );
 
     let courses = iclass.query_courses().await?;

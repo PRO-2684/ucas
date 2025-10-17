@@ -93,15 +93,13 @@ impl IClass {
     ///
     /// See [`IClassError`].
     pub async fn query_courses(&self) -> Result<Vec<Course>, IClassError> {
-        let Some(login_result) = &self.login_result else {
-            return Err(IClassError::NotLoggedIn);
-        };
+        let user_session = self.get_user_session()?;
         let url = self.api_root.join("app/my/get_my_course.action")?;
         let response: Response<Vec<Course>> = self
             .client
             .get(url)?
-            .header("sessionId", &login_result.session_id)?
-            .query(&[("id", &login_result.id)])? // FIXME: Using form?
+            .header("sessionId", &user_session.session_id)?
+            .query(&[("id", &user_session.id)])? // FIXME: Using form?
             .send()
             .await?
             .json()
@@ -121,17 +119,15 @@ impl IClass {
     ///
     /// See [`IClassError`].
     pub async fn query_daily_schedule(&self, date: &str) -> Result<Vec<Schedule>, IClassError> {
-        let Some(login_result) = &self.login_result else {
-            return Err(IClassError::NotLoggedIn);
-        };
+        let user_session = self.get_user_session()?;
         let url = self
             .api_root
             .join("app/course/get_stu_course_sched.action")?;
         let response: Response<Vec<Schedule>> = self
             .client
             .get(url)?
-            .header("sessionId", &login_result.session_id)?
-            .query(&[("id", login_result.id.as_str()), ("dateStr", date)])?
+            .header("sessionId", &user_session.session_id)?
+            .query(&[("id", user_session.id.as_str()), ("dateStr", date)])?
             .send()
             .await?
             .json()
@@ -154,17 +150,15 @@ impl IClass {
         &self,
         date: &str,
     ) -> Result<Vec<DailySchedule>, IClassError> {
-        let Some(login_result) = &self.login_result else {
-            return Err(IClassError::NotLoggedIn);
-        };
+        let user_session = self.get_user_session()?;
         let url = self
             .api_root
             .join("app/course/get_stu_course_sched_week.action")?;
         let response: Response<Vec<DailySchedule>> = self
             .client
             .get(url)?
-            .header("sessionId", &login_result.session_id)?
-            .query(&[("id", login_result.id.as_str()), ("dateStr", date)])?
+            .header("sessionId", &user_session.session_id)?
+            .query(&[("id", user_session.id.as_str()), ("dateStr", date)])?
             .send()
             .await?
             .json()

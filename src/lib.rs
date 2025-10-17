@@ -28,8 +28,8 @@ pub struct IClass {
     api_root: Url,
     /// The HTTP client.
     client: Client,
-    /// Login result.
-    pub login_result: Option<UserSessionInfo>,
+    /// User session information.
+    pub user_session: Option<UserSessionInfo>,
 }
 
 /// Possible errors when interacting with the iClass platform.
@@ -92,8 +92,17 @@ impl IClass {
         Self {
             api_root: url,
             client: Client::new(),
-            login_result: None,
+            user_session: None,
         }
+    }
+
+    /// Gets a reference to user session info, or raises [`IClassError::NotLoggedIn`].
+    ///
+    /// # Errors
+    ///
+    /// [`IClassError::NotLoggedIn`] if the user is not logged in.
+    fn get_user_session(&self) -> Result<&UserSessionInfo, IClassError> {
+        self.user_session.as_ref().ok_or(IClassError::NotLoggedIn)
     }
 }
 

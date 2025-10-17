@@ -21,7 +21,7 @@ impl IClass {
             .json()
             .await?;
         let login_result = response.into_result()?;
-        self.login_result.replace(login_result);
+        self.user_session.replace(login_result);
 
         Ok(())
     }
