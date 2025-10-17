@@ -13,7 +13,7 @@ pub struct CheckInResult {
 }
 
 impl IClass {
-    /// Checks in the schedule with given uuid.
+    /// Checks in the schedule with given uuid. This is equivalent to scanning the QR code on the smart device outside the classroom.
     ///
     /// # Errors
     ///
@@ -22,7 +22,7 @@ impl IClass {
     /// # Panics
     ///
     /// This function will panic if system time is before [`UNIX_EPOCH`].
-    pub async fn check_in(&self, schedule_uuid: &str) -> Result<Value, IClassError> {
+    pub async fn check_in_by_uuid(&self, schedule_uuid: &str) -> Result<Value, IClassError> {
         // /app/course/stu_scan_sign.action?timeTableId={schedule_uuid}&timestamp={timestamp}
         let user_session = self.get_user_session()?;
         let url = self.api_root.join("app/course/stu_scan_sign.action")?;
@@ -36,6 +36,41 @@ impl IClass {
             .header("sessionId", &user_session.session_id)?
             .query(&[
                 ("timeTableId", schedule_uuid),
+                ("timestamp", &timestamp.to_string()),
+                ("id", user_session.id.as_str()),
+            ])?
+            .send()
+            .await?
+            .json()
+            .await?;
+        let check_in_result = response.into_result()?;
+
+        Ok(check_in_result)
+    }
+
+    /// Checks in the schedule with given id. This is equivalent to scanning the QR code on the computer inside the classroom.
+    ///
+    /// # Errors
+    ///
+    /// See [`IClassError`].
+    ///
+    /// # Panics
+    ///
+    /// This function will panic if system time is before [`UNIX_EPOCH`].
+    pub async fn check_in_by_id(&self, schedule_id: &str) -> Result<Value, IClassError> {
+        // /app/course/stu_sign_in.action?scheduleId={schedule_id}&timestamp={timestamp}
+        let user_session = self.get_user_session()?;
+        let url = self.api_root.join("app/course/stu_scan_sign.action")?;
+        let timestamp = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .expect("Time went backwards")
+            .as_millis();
+        let response: Response<Value> = self
+            .client
+            .get(url)?
+            .header("sessionId", &user_session.session_id)?
+            .query(&[
+                ("courseSchedId", schedule_id),
                 ("timestamp", &timestamp.to_string()),
                 ("id", user_session.id.as_str()),
             ])?

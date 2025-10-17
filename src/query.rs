@@ -60,6 +60,8 @@ pub struct Schedule {
     /// The course scheduled.
     #[serde(flatten)]
     pub course: Course,
+    /// Id of this schedule.
+    pub id: String,
     /// Unique id of this schedule.
     pub uuid: String,
     /// Begin time.
@@ -194,7 +196,11 @@ impl Display for Schedule {
             end_time,
             ..
         } = self;
-        write!(f, "[{uuid} {begin_time} ~ {end_time}] {}", course.course_name)
+        write!(
+            f,
+            "[{uuid} {begin_time} ~ {end_time}] {}",
+            course.course_name
+        )
     }
 }
 
