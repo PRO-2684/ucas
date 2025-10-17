@@ -5,9 +5,13 @@
 #![deny(missing_docs)]
 #![warn(clippy::all, clippy::nursery, clippy::pedantic, clippy::cargo)]
 
+mod checkin;
 mod login;
+mod query;
 
+pub use checkin::CheckInResult;
 pub use login::LoginResult;
+pub use query::QueryResult;
 use cyper::{Client, Error as CyperError};
 use serde::Deserialize;
 
