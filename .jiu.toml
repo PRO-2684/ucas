@@ -1,4 +1,4 @@
-description = "\u001b[1;36mucas-iclass\u001b[22;39m: UCAS iClass"
+description = "\u001b[1;36mucas-iclass\u001b[22;39m: iClass API for UCAS"
 
 [[recipes]]
 names = ["build", "b"]

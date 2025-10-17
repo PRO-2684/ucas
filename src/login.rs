@@ -1,18 +1,16 @@
 //! Login related logic.
 
-use super::{IClass, API_ROOT, Response, IClassError};
+use super::{API_ROOT, IClass, IClassError, Response};
 use serde::Deserialize;
 
 impl IClass {
     /// Logs in to the iClass platform.
     pub async fn login(&mut self, username: &str, password: &str) -> Result<(), IClassError> {
         // /app/user/login.action
-        let response: Response<LoginResult> = self.client
+        let response: Response<LoginResult> = self
+            .client
             .post(format!("{API_ROOT}app/user/login.action"))?
-            .query(&[
-                ("phone", username),
-                ("password", password),
-            ])?
+            .query(&[("phone", username), ("password", password)])?
             .send()
             .await?
             .json()

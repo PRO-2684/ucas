@@ -8,18 +8,22 @@
 mod checkin;
 mod login;
 mod query;
+mod util;
 
 pub use checkin::CheckInResult;
-pub use login::LoginResult;
-pub use query::QueryResult;
 use cyper::{Client, Error as CyperError};
+pub use login::LoginResult;
+pub use query::{QueryCoursesResult, QuerySemesterResult, Semester};
 use serde::Deserialize;
+use url::Url;
 
 /// The root URL of the iClass platform.
 pub const API_ROOT: &str = "https://iclass.ucas.edu.cn:8181/";
 
 /// The iClass struct.
 pub struct IClass {
+    /// API root URL.
+    pub api_root: Url,
     /// The HTTP client.
     client: Client,
     /// Login result.
@@ -66,12 +70,16 @@ pub struct Response<T> {
 impl IClass {
     /// Creates a new instance of [`IClass`].
     pub fn new() -> Self {
-        Self::with_client(Client::new())
+        Self::with_api_root(Url::parse(API_ROOT).unwrap())
     }
 
-    /// Creates a new instance of [`IClass`] with a custom [`Client`].
-    pub fn with_client(client: Client) -> Self {
-        Self { client, login_result: None }
+    /// Creates a new instance of [`IClass`] with given API root URL.
+    pub fn with_api_root(url: Url) -> Self {
+        Self {
+            api_root: url,
+            client: Client::new(),
+            login_result: None,
+        }
     }
 }
 
