@@ -64,6 +64,9 @@ pub struct Schedule {
     pub id: String,
     /// Unique id of this schedule.
     pub uuid: String,
+    /// Check in status. Only work in [`query_daily_schedule`](IClass::query_daily_schedule), and does not work in [`query_weekly_schedule`](IClass::query_weekly_schedule) or when wrapped in [`DailySchedule`](DailySchedule).
+    #[serde(rename = "signStatus", deserialize_with = "super::util::deserialize_str_to_bool")]
+    pub checked_in: bool,
     /// Begin time.
     #[serde(rename = "classBeginTime")]
     pub begin_time: String,
@@ -88,6 +91,8 @@ impl IClass {
         let semesters = response.into_result()?;
         Ok(semesters)
     }
+
+    // https://iclass.ucas.edu.cn:8181/app/choosecourse/get_myall_course.action?user_type=1
 
     /// Queries selected courses for current semester.
     ///
@@ -193,13 +198,16 @@ impl fmt::Display for Schedule {
             course,
             id,
             uuid,
+            checked_in,
             begin_time,
             end_time,
             ..
         } = self;
+        let indicator = if *checked_in { "[✓]" } else { "[ ]" };
         write!(
             f,
-            "[{begin_time} ~ {end_time}] id={id} uuid={uuid}\n{course}",
+            "{indicator} [{begin_time} ~ {end_time}] id={id} uuid={uuid} {}",
+            course.course_name
         )
     }
 }
@@ -212,7 +220,14 @@ impl fmt::Display for DailySchedule {
         } = self;
         writeln!(f, "Schedule on {date_str}:")?;
         for schedule in schedules {
-            writeln!(f, "  {schedule}")?;
+            let Schedule {
+                id,
+                uuid,
+                begin_time,
+                end_time,
+                ..
+            } = schedule;
+            writeln!(f, "  [{begin_time} ~ {end_time}] id={id} uuid={uuid} {}", schedule.course.course_name)?;
         }
         Ok(())
     }
