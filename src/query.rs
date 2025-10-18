@@ -1,6 +1,6 @@
 //! Query selected courses.
 
-use std::fmt::Display;
+use std::fmt;
 
 use super::{IClass, IClassError, Response};
 use serde::Deserialize;
@@ -171,8 +171,8 @@ impl IClass {
     }
 }
 
-impl Display for Course {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl fmt::Display for Course {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let Self {
             course_name,
             course_id,
@@ -187,10 +187,11 @@ impl Display for Course {
     }
 }
 
-impl Display for Schedule {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl fmt::Display for Schedule {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let Self {
             course,
+            id,
             uuid,
             begin_time,
             end_time,
@@ -198,14 +199,13 @@ impl Display for Schedule {
         } = self;
         write!(
             f,
-            "[{uuid} {begin_time} ~ {end_time}] {}",
-            course.course_name
+            "[{begin_time} ~ {end_time}] id={id} uuid={uuid}\n{course}",
         )
     }
 }
 
-impl Display for DailySchedule {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl fmt::Display for DailySchedule {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let Self {
             date_str,
             schedules,

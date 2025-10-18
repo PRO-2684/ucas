@@ -44,15 +44,16 @@ async fn main() -> Result<(), IClassError> {
         // Treat it as id if it is all digits, otherwise treat it as uuid
         if id_or_uuid.chars().all(char::is_numeric) {
             let check_in_result = iclass.check_in_by_id(&id_or_uuid).await?;
-            println!("\nCheck-in result for schedule {id_or_uuid} (by id): {check_in_result:?}");
+            println!("\nCheck-in result for schedule {id_or_uuid} (by id): {check_in_result}");
         } else {
             let check_in_result = iclass.check_in_by_uuid(&id_or_uuid).await?;
-            println!("\nCheck-in result for schedule {id_or_uuid} (by uuid): {check_in_result:?}");
+            println!("\nCheck-in result for schedule {id_or_uuid} (by uuid): {check_in_result}");
         }
     }
 
     // Check in result for an outdated schedule by id: Object {"stuSignId": String("40790967"), "stuSignStatus": String("1")}
     // Check in result for an outdated schedule by uuid: Object {"stuSignId": String("40221478"), "stuSignStatus": String("1")}
+    // Check in success: Object {"stuSignId": String("41254913"), "stuSignStatus": String("1")}
 
     Ok(())
 }
