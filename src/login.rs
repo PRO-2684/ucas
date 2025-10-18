@@ -20,7 +20,7 @@ impl IClass {
         let response: Response<UserSessionInfo> = self
             .client
             .post(url)?
-            .query(&[("phone", username), ("password", password)])?
+            .form(&[("phone", username), ("password", password)])?
             .send()
             .await?
             .json()

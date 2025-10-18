@@ -55,11 +55,7 @@ pub struct Courses {
 #[argh(subcommand, name = "schedule")]
 pub struct Schedule {
     /// the date to get schedule for in "YYYY-MM-DD" format, defaulting to today
-    #[argh(
-        option,
-        short = 'd',
-        default = "get_today()"
-    )]
+    #[argh(option, short = 'd', default = "get_today()")]
     pub date: NaiveDate,
     /// show weekly schedule instead of daily schedule
     #[argh(switch, short = 'w')]

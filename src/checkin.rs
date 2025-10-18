@@ -39,7 +39,7 @@ impl IClass {
         let timestamp = super::util::current_timestamp_millis();
         let response: Response<CheckInResult> = self
             .client
-            .get(url)?
+            .get(url)? // TODO: Maybe post + form?
             .header("sessionId", &user_session.session_id)?
             .query(&[
                 ("timeTableId", schedule_uuid),
@@ -71,7 +71,7 @@ impl IClass {
         let timestamp = super::util::current_timestamp_millis();
         let response: Response<CheckInResult> = self
             .client
-            .get(url)?
+            .get(url)? // TODO: Maybe post + form?
             .header("sessionId", &user_session.session_id)?
             .query(&[
                 ("courseSchedId", schedule_id),

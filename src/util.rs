@@ -87,8 +87,29 @@ where
     D: Deserializer<'de>,
 {
     let s: &str = Deserialize::deserialize(deserializer)?;
-    let naive_date = NaiveDate::parse_from_str(s, "%Y%m%d")
-        .map_err(|e| de::Error::custom(format!("invalid date string: {s}, error: {e}")))?;
+    let naive_date = NaiveDate::parse_from_str(s, "%Y%m%d").map_err(|e| {
+        de::Error::custom(format!(
+            "invalid date string: {s}, expected YYmmdd, error: {e}"
+        ))
+    })?;
+    Ok(naive_date)
+}
+
+/// Deserialize a string (YYYY-MM-DD) to a [`NaiveDate`].
+///
+/// # Errors
+///
+/// If the string is not in the correct format ("YYYY-MM-DD").
+pub fn deserialize_str_to_date_hyphen<'de, D>(deserializer: D) -> Result<NaiveDate, D::Error>
+where
+    D: Deserializer<'de>,
+{
+    let s: &str = Deserialize::deserialize(deserializer)?;
+    let naive_date = NaiveDate::parse_from_str(s, "%Y-%m-%d").map_err(|e| {
+        de::Error::custom(format!(
+            "invalid date string: {s}, expected YY-mm-dd, error: {e}"
+        ))
+    })?;
     Ok(naive_date)
 }
 
@@ -118,6 +139,7 @@ pub fn current_timestamp_millis() -> u128 {
 }
 
 /// Get today.
+#[must_use]
 pub fn get_today() -> NaiveDate {
     Utc::now().with_timezone(&CST_TIMEZONE).date_naive()
 }

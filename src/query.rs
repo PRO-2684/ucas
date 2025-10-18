@@ -9,16 +9,17 @@ use serde::Deserialize;
 /// A semester.
 #[derive(Clone, Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
-#[deprecated(note = "Not used in the mini-app")]
 pub struct Semester {
     /// Semester code.
     pub code: String,
     /// Semester name.
     pub name: String,
     /// Semester begin date.
-    pub begin_date: String,
+    #[serde(deserialize_with = "super::util::deserialize_str_to_date_hyphen")]
+    pub begin_date: NaiveDate,
     /// Semester end date.
-    pub end_date: String,
+    #[serde(deserialize_with = "super::util::deserialize_str_to_date_hyphen")]
+    pub end_date: NaiveDate,
     /// Whether it is the current semester.
     #[serde(
         rename = "yearStatus",
@@ -95,13 +96,18 @@ impl IClass {
     /// # Errors
     ///
     /// See [`IClassError`].
-    #[allow(deprecated, reason = "This is what the API returns")]
-    #[deprecated(note = "Not used in the mini-app")]
     pub async fn query_semester(&self) -> Result<Vec<Semester>, IClassError> {
         let url = self
             .api_root
             .join("app/course/get_base_school_year.action")?;
-        let response: Response<Vec<Semester>> = self.client.get(url)?.send().await?.json().await?;
+        let response: Response<Vec<Semester>> = self
+            .client
+            .post(url)?
+            .form(&[("userId", &self.get_user_session()?.id)])?
+            .send()
+            .await?
+            .json()
+            .await?;
         let semesters = response.into_result()?;
         Ok(semesters)
     }
@@ -118,9 +124,9 @@ impl IClass {
         let url = self.api_root.join("app/my/get_my_course.action")?;
         let response: Response<Vec<Course>> = self
             .client
-            .get(url)?
+            .post(url)?
             .header("sessionId", &user_session.session_id)?
-            .query(&[("id", &user_session.id)])? // FIXME: Using form?
+            .form(&[("id", &user_session.id)])?
             .send()
             .await?
             .json()
@@ -150,9 +156,9 @@ impl IClass {
         let date_str = super::util::format_date_to_str(date);
         let response: Response<Vec<Schedule>> = self
             .client
-            .get(url)?
+            .post(url)?
             .header("sessionId", &user_session.session_id)?
-            .query(&[("id", &user_session.id), ("dateStr", &date_str)])?
+            .form(&[("id", &user_session.id), ("dateStr", &date_str)])?
             .send()
             .await?
             .json()
@@ -182,9 +188,9 @@ impl IClass {
         let date_str = super::util::format_date_to_str(date);
         let response: Response<Vec<DailySchedule>> = self
             .client
-            .get(url)?
+            .post(url)?
             .header("sessionId", &user_session.session_id)?
-            .query(&[("id", &user_session.id), ("dateStr", &date_str)])?
+            .form(&[("id", &user_session.id), ("dateStr", &date_str)])?
             .send()
             .await?
             .json()
@@ -192,6 +198,23 @@ impl IClass {
         let week_schedule = response.into_result()?;
 
         Ok(week_schedule)
+    }
+}
+
+impl fmt::Display for Semester {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let Self {
+            code,
+            name,
+            begin_date,
+            end_date,
+            is_current,
+        } = self;
+        let current_indicator = if *is_current { " (current)" } else { "" };
+        write!(
+            f,
+            "{name} ({code}): {begin_date} ~ {end_date}{current_indicator}"
+        )
     }
 }
 
