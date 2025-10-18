@@ -54,7 +54,7 @@ cargo install ucas-iclass
 - ✅ Checkin: Check-in for a specific schedule by id or uuid.
 
     ```bash
-    ucas-iclass checkin <id_or_uuid> [-s <session-file>]
+    ucas-iclass checkin [<id_or_uuid>] [-s <session-file>]
     ```
 
 ## ☑️ TODO
