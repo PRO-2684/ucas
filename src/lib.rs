@@ -10,6 +10,8 @@ mod checkin;
 mod login;
 mod query;
 pub mod util;
+#[cfg(feature = "cli")]
+pub mod cli;
 
 pub use checkin::CheckInResult;
 pub use login::UserSessionInfo;
@@ -47,7 +49,7 @@ pub enum IClassError {
     ApiError(String),
     /// Cyper-related error.
     #[error("cyper error: {0}")]
-    CyperError(CyperError),
+    CyperError(#[from] CyperError),
     /// Error parsing data from the server.
     #[error("data parsing error")]
     DataParsingError,
@@ -104,12 +106,6 @@ impl IClass {
     /// [`IClassError::NotLoggedIn`] if the user is not logged in.
     fn get_user_session(&self) -> Result<&UserSessionInfo, IClassError> {
         self.user_session.as_ref().ok_or(IClassError::NotLoggedIn)
-    }
-}
-
-impl From<CyperError> for IClassError {
-    fn from(e: CyperError) -> Self {
-        Self::CyperError(e)
     }
 }
 

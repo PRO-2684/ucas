@@ -85,7 +85,7 @@ impl IClass {
 impl fmt::Display for CheckInResult {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let Self { id, status  } = self;
-        let status = if *status { "Success" } else { "Failed" };
+        let status = if *status { "🟢 Success" } else { "🔴 Failed" };
         write!(f, "{status} (#{id})")
     }
 }

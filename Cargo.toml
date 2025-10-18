@@ -12,10 +12,13 @@ license = "MIT"
 authors = ["PRO-2684"]
 
 [dependencies]
+anyhow = { version = "1.0.100", optional = true }
+argh = { version = "0.1.13", optional = true, default-features = false, features = ["help"] }
 chrono = { version = "0.4.42", default-features = false, features = ["std", "now"] }
 compio = { version = "0.16.0", optional = true, features = ["macros"] }
 cyper = { version = "0.5.0", features = ["json"] }
 serde = "1.0.228"
+serde_json = "1.0.145"
 thiserror = "2.0.17"
 url = "2.5.7"
 
@@ -24,7 +27,7 @@ name = "ucas-iclass"
 required-features = ["cli"]
 
 [features]
-cli = ["compio"]
+cli = ["anyhow", "argh", "compio"]
 
 [profile.release]
 debug = false     # Disable debug information in release builds.

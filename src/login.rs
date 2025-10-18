@@ -1,7 +1,12 @@
 //! Login related logic.
 
 use super::{IClass, IClassError, Response};
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
+use std::{
+    fs::File,
+    io::{BufReader, BufWriter, Error as IoError, Write},
+    path::Path,
+};
 
 impl IClass {
     /// Logs in to the iClass platform.
@@ -25,10 +30,39 @@ impl IClass {
 
         Ok(())
     }
+
+    /// Restores user session from given file.
+    ///
+    /// # Errors
+    ///
+    /// IO errors during file operations.
+    pub fn restore_session_from_file<P: AsRef<Path>>(
+        &mut self,
+        path: P,
+    ) -> Result<(), IoError> {
+        let session_info = UserSessionInfo::load_from_file(path)?;
+        self.user_session.replace(session_info);
+        Ok(())
+    }
+
+    /// Saves user session to given file, if any. Returns whether a session existed.
+    ///
+    /// # Errors
+    ///
+    /// IO errors during file operations.
+    pub fn save_session_to_file<P: AsRef<Path>>(&self, path: P) -> Result<bool, IoError> {
+        let exists = if let Some(session_info) = &self.user_session {
+            session_info.save_to_file(path)?;
+            true
+        } else {
+            false
+        };
+        Ok(exists)
+    }
 }
 
 /// User session information returned after login.
-#[derive(Clone, Debug, Deserialize)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct UserSessionInfo {
     /// ID of the user.
@@ -39,4 +73,23 @@ pub struct UserSessionInfo {
     pub real_name: String,
     /// Student number.
     pub student_no: String,
+}
+
+impl UserSessionInfo {
+    /// Saves the information to a file.
+    pub fn save_to_file<P: AsRef<Path>>(&self, path: P) -> Result<(), IoError> {
+        let file = File::create(path)?;
+        let mut writer = BufWriter::new(file);
+        serde_json::to_writer_pretty(&mut writer, self)?;
+        writer.flush()?;
+        Ok(())
+    }
+
+    /// Loads the information from a file.
+    pub fn load_from_file<P: AsRef<Path>>(path: P) -> Result<Self, IoError> {
+        let file = File::open(path)?;
+        let reader = BufReader::new(file);
+        let session_info = serde_json::from_reader(reader)?;
+        Ok(session_info)
+    }
 }
