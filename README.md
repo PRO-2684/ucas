@@ -59,6 +59,7 @@ cargo install ucas-iclass
 
 ## ☑️ TODO
 
+- Customize api root for cli.
 - Checkin: Default to current schedule if no `id_or_uuid` provided.
 
 ## 🎉 Credits

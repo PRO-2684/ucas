@@ -24,6 +24,38 @@ where
     }
 }
 
+/// Deserialize a string to an i8.
+///
+/// # Errors
+///
+/// If the string cannot be parsed to i8.
+pub fn deserialize_str_to_int<'de, D>(deserializer: D) -> Result<i8, D::Error>
+where
+    D: Deserializer<'de>,
+{
+    let s: &str = Deserialize::deserialize(deserializer)?;
+    s.parse()
+        .map_err(|e| de::Error::custom(format!("invalid integer string: {s}, error: {e}")))
+}
+
+/// Deserialize an optional string to an optional i8.
+///
+/// # Errors
+///
+/// If the string cannot be parsed to i8.
+pub fn deserialize_opt_str_to_int<'de, D>(deserializer: D) -> Result<Option<i8>, D::Error>
+where
+    D: Deserializer<'de>,
+{
+    let s: Option<&str> = Deserialize::deserialize(deserializer)?;
+    s.map(|str_val| {
+        str_val.parse().map_err(|e| {
+            de::Error::custom(format!("invalid integer string: {str_val}, error: {e}"))
+        })
+    })
+    .transpose()
+}
+
 /// Deserialize a string (YYYY-MM-DD HH:MM:SS) to a [`DateTime`] in China Standard Time.
 ///
 /// # Errors

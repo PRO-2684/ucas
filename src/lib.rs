@@ -38,9 +38,6 @@ pub struct IClass {
 /// Possible errors when interacting with the iClass platform.
 #[derive(Debug, thiserror::Error)]
 pub enum IClassError {
-    /// Login credentials are incorrect.
-    #[error("authentication failed")]
-    AuthenticationFailed,
     /// The user has not logged in.
     #[error("user not logged in")]
     NotLoggedIn,
@@ -59,15 +56,19 @@ pub enum IClassError {
 #[derive(Clone, Debug, Deserialize)]
 pub struct Response<T> {
     /// The status code of the response, 0 for success.
-    #[serde(rename = "STATUS")]
-    pub status: String,
+    #[serde(rename = "STATUS", deserialize_with = "util::deserialize_str_to_int")]
+    pub status: i8,
     /// Optional error code.
     ///
     /// - 100: 参数错误
     /// - 106: 用户不存在
     /// - 107: 密码错误
-    #[serde(rename = "ERRCODE")]
-    pub err_code: Option<String>,
+    #[serde(
+        rename = "ERRCODE",
+        default,
+        deserialize_with = "util::deserialize_opt_str_to_int"
+    )]
+    pub err_code: Option<i8>,
     /// Optional error message.
     #[serde(rename = "ERRMSG")]
     pub err_msg: Option<String>,
@@ -122,14 +123,12 @@ impl<T> Response<T> {
     ///
     /// See [`IClassError`].
     pub fn into_result(self) -> Result<T, IClassError> {
-        match self.status.as_str() {
-            "0" => self
-                .result
-                .map_or_else(|| Err(IClassError::DataParsingError), |result| Ok(result)),
-            "106" | "107" => Err(IClassError::AuthenticationFailed),
-            _ => Err(IClassError::ApiError(
+        if self.status == 0 {
+            self.result.ok_or(IClassError::DataParsingError)
+        } else {
+            Err(IClassError::ApiError(
                 self.err_msg.unwrap_or_else(|| "Unknown error".to_string()),
-            )),
+            ))
         }
     }
 }
