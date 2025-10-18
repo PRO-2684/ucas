@@ -16,7 +16,7 @@ pub mod util;
 pub use checkin::CheckInResult;
 pub use login::UserSessionInfo;
 #[allow(deprecated, reason = "Re-exporting for potential use")]
-pub use query::{Course, Semester};
+pub use query::{Course, Semester, DailySchedule, Schedule};
 
 use cyper::{Client, Error as CyperError};
 use serde::Deserialize;

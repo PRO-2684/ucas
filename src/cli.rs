@@ -1,8 +1,8 @@
 //! Command line interface related logic.
 
-use super::util::CST_TIMEZONE;
+use super::util::get_today;
 use argh::FromArgs;
-use chrono::{NaiveDate, Utc};
+use chrono::NaiveDate;
 
 /// iClass API for UCAS.
 #[derive(Clone, Debug, FromArgs)]
@@ -58,7 +58,7 @@ pub struct Schedule {
     #[argh(
         option,
         short = 'd',
-        default = "Utc::now().with_timezone(&CST_TIMEZONE).date_naive()"
+        default = "get_today()"
     )]
     pub date: NaiveDate,
     /// show weekly schedule instead of daily schedule
@@ -73,9 +73,9 @@ pub struct Schedule {
 #[derive(Clone, Debug, FromArgs)]
 #[argh(subcommand, name = "checkin")]
 pub struct CheckIn {
-    /// the schedule id or uuid
+    /// the schedule id or uuid, default is to check-in current schedule if any
     #[argh(positional)]
-    pub id_or_uuid: String,
+    pub id_or_uuid: Option<String>,
     /// the session file path to load from, default is "session.json"
     #[argh(option, short = 's', default = "String::from(\"session.json\")")]
     pub session_file: String,

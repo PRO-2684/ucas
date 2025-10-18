@@ -1,6 +1,6 @@
 //! Utility functions.
 
-use chrono::{DateTime, FixedOffset, NaiveDate, NaiveDateTime};
+use chrono::{DateTime, FixedOffset, NaiveDate, NaiveDateTime, Utc};
 use serde::de::{self, Deserialize, Deserializer};
 use std::time::{SystemTime, UNIX_EPOCH};
 
@@ -115,4 +115,9 @@ pub fn current_timestamp_millis() -> u128 {
         .duration_since(UNIX_EPOCH)
         .expect("Time went backwards")
         .as_millis()
+}
+
+/// Get today.
+pub fn get_today() -> NaiveDate {
+    Utc::now().with_timezone(&CST_TIMEZONE).date_naive()
 }

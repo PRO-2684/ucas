@@ -1,9 +1,9 @@
 #![warn(clippy::all, clippy::nursery, clippy::pedantic, clippy::cargo)]
 
 use anyhow::{Result, bail};
+use chrono::Utc;
 use ucas_iclass::{
-    IClass,
-    cli::{CheckIn, Cli, Courses, Login, Schedule, SubCommands},
+    cli::{CheckIn, Cli, Courses, Login, Schedule, SubCommands}, util::get_today, IClass, IClassError, Schedule as IClassSchedule
 };
 
 #[compio::main]
@@ -58,18 +58,48 @@ async fn main() -> Result<()> {
             session_file,
         }) => {
             iclass.restore_session_from_file(&session_file)?;
-            // id is all numeric, uuid is all hexadecimal and 32 characters long
-            let (type_, check_in_result) =
-                if id_or_uuid.len() == 32 && id_or_uuid.chars().all(|c| c.is_ascii_hexdigit()) {
-                    ("id", iclass.check_in_by_uuid(&id_or_uuid).await?)
-                } else if id_or_uuid.chars().all(char::is_numeric) {
-                    ("uuid", iclass.check_in_by_id(&id_or_uuid).await?)
-                } else {
-                    bail!("Invalid id or uuid format: {id_or_uuid}");
-                };
-            println!("Check-in by {type_} for schedule {id_or_uuid}: {check_in_result}");
+            match id_or_uuid {
+                // id or uuid provided, determine which one it is
+                Some(id_or_uuid) => {
+                    // id is all numeric, uuid is all hexadecimal and 32 characters long
+                    let (type_, result) = if id_or_uuid.len() == 32 && id_or_uuid.chars().all(|c| c.is_ascii_hexdigit()) {
+                        ("uuid", iclass.check_in_by_uuid(&id_or_uuid).await?)
+                    } else if id_or_uuid.chars().all(char::is_numeric) {
+                        ("id", iclass.check_in_by_id(&id_or_uuid).await?)
+                    } else {
+                        bail!("Invalid id or uuid format: {id_or_uuid}");
+                    };
+                    println!("Check-in by {type_} for schedule {id_or_uuid}: {result}");
+                },
+                // no id or uuid provided, try to determine current schedule
+                None => {
+                    let current_schedule = determine_current_schedule(&mut iclass).await?;
+                    let Some(schedule) = current_schedule else {
+                        bail!("No current schedule found for check-in");
+                    };
+                    // Just use uuid for check-in
+                    let uuid = &schedule.uuid;
+                    let name = &schedule.course.course_name;
+                    let result = iclass.check_in_by_uuid(&schedule.uuid).await?;
+                    println!("Check-in by uuid for current schedule {uuid} ({name}): {result}");
+                }
+            };
         }
     }
 
     Ok(())
+}
+
+async fn determine_current_schedule(iclass: &mut IClass) -> Result<Option<IClassSchedule>, IClassError> {
+    let today = get_today();
+    let daily_schedule = iclass.query_daily_schedule(&today).await?;
+    let now = Utc::now();
+    for schedule in daily_schedule {
+        let IClassSchedule { begin_time, end_time, .. } = &schedule;
+        if now >= *begin_time && now <= *end_time {
+            return Ok(Some(schedule));
+        }
+    }
+
+    Ok(None)
 }
