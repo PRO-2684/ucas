@@ -10,25 +10,6 @@
 
 iClass API for UCAS. Should also work for other schools, but not guaranteed.
 
-## ⚙️ Automatic Releases Setup
-
-1. [Create a new GitHub repository](https://github.com/new) with the name `ucas-iclass` and push this generated project to it.
-2. Enable Actions for the repository, and grant "Read and write permissions" to the workflow [here](https://github.com/PRO-2684/ucas-iclass/settings/actions).
-3. [Generate an API token on crates.io](https://crates.io/settings/tokens/new), with the following setup:
-
-    - `Name`: `ucas-iclass`
-    - `Expiration`: `No expiration`
-    - `Scopes`: `publish-new`, `publish-update`
-    - `Crates`: `ucas-iclass`
-
-4. [Add a repository secret](https://github.com/PRO-2684/ucas-iclass/settings/secrets/actions/new) named `CARGO_TOKEN` with the generated token as its value.
-5. Consider removing this section and updating this README with your own project information.
-
-[Trusted Publishing](https://crates.io/docs/trusted-publishing) is a recent feature added to crates.io. To utilize it, first make sure you've already successfully published the crate. Then, follow these steps:
-
-1. Configuring Trusted Publishing - see the section on [crates.io documentation](https://crates.io/docs/trusted-publishing#Configuring-Trusted-Publishing:~:text=Configuring%20Trusted%20Publishing).
-2. Modify `.github/workflows/release.yml` like
-
 ## 📥 Installation
 
 ### Using [`binstall`](https://github.com/cargo-bins/cargo-binstall)
@@ -47,13 +28,35 @@ Navigate to the [Releases page](https://github.com/PRO-2684/ucas-iclass/releases
 cargo install ucas-iclass
 ```
 
-## 💡 Examples
-
-TODO
-
 ## 📖 Usage
 
-TODO
+- 🔑 Login: Login to iClass and save session to a file.
+
+    ```bash
+    ucas-iclass login <username> <password> [-s <session-file>]
+    ```
+
+- 📖 Courses: List courses in current semester.
+
+    ```bash
+    ucas-iclass courses [-s <session-file>]
+    ```
+
+- 📃 Schedule: Get schedule for a specific date or week.
+
+    ```bash
+    ucas-iclass schedule [-d <date>] [-w] [-s <session-file>]
+    ```
+
+- ✅ Checkin: Check-in for a specific schedule by id or uuid.
+
+    ```bash
+    ucas-iclass checkin <id_or_uuid> [-s <session-file>]
+    ```
+
+## ☑️ TODO
+
+- Checkin: Default to current schedule if no `id_or_uuid` provided.
 
 ## 🎉 Credits
 
