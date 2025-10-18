@@ -12,7 +12,10 @@ pub struct CheckInResult {
     #[serde(rename = "stuSignId")]
     pub id: String,
     /// Check-in status.
-    #[serde(rename = "stuSignStatus", deserialize_with = "super::util::deserialize_str_to_bool")]
+    #[serde(
+        rename = "stuSignStatus",
+        deserialize_with = "super::util::deserialize_str_to_bool"
+    )]
     pub status: bool,
 }
 
@@ -26,7 +29,10 @@ impl IClass {
     /// # Panics
     ///
     /// This function will panic if system time is before [`UNIX_EPOCH`].
-    pub async fn check_in_by_uuid(&self, schedule_uuid: &str) -> Result<CheckInResult, IClassError> {
+    pub async fn check_in_by_uuid(
+        &self,
+        schedule_uuid: &str,
+    ) -> Result<CheckInResult, IClassError> {
         // /app/course/stu_scan_sign.action?timeTableId={schedule_uuid}&timestamp={timestamp}
         let user_session = self.get_user_session()?;
         let url = self.api_root.join("app/course/stu_scan_sign.action")?;
@@ -84,8 +90,12 @@ impl IClass {
 
 impl fmt::Display for CheckInResult {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let Self { id, status  } = self;
-        let status = if *status { "🟢 Success" } else { "🔴 Failed" };
+        let Self { id, status } = self;
+        let status = if *status {
+            "🟢 Success"
+        } else {
+            "🔴 Failed"
+        };
         write!(f, "{status} (#{id})")
     }
 }

@@ -36,10 +36,7 @@ impl IClass {
     /// # Errors
     ///
     /// IO errors during file operations.
-    pub fn restore_session_from_file<P: AsRef<Path>>(
-        &mut self,
-        path: P,
-    ) -> Result<(), IoError> {
+    pub fn restore_session_from_file<P: AsRef<Path>>(&mut self, path: P) -> Result<(), IoError> {
         let session_info = UserSessionInfo::load_from_file(path)?;
         self.user_session.replace(session_info);
         Ok(())
@@ -77,6 +74,10 @@ pub struct UserSessionInfo {
 
 impl UserSessionInfo {
     /// Saves the information to a file.
+    ///
+    /// # Errors
+    ///
+    /// [IO errors](IoError) during file operations.
     pub fn save_to_file<P: AsRef<Path>>(&self, path: P) -> Result<(), IoError> {
         let file = File::create(path)?;
         let mut writer = BufWriter::new(file);
@@ -86,6 +87,10 @@ impl UserSessionInfo {
     }
 
     /// Loads the information from a file.
+    ///
+    /// # Errors
+    ///
+    /// [IO errors](IoError) during file operations.
     pub fn load_from_file<P: AsRef<Path>>(path: P) -> Result<Self, IoError> {
         let file = File::open(path)?;
         let reader = BufReader::new(file);

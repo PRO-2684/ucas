@@ -1,6 +1,6 @@
 //! Utility functions.
 
-use chrono::{FixedOffset, DateTime, NaiveDateTime, NaiveDate};
+use chrono::{DateTime, FixedOffset, NaiveDate, NaiveDateTime};
 use serde::de::{self, Deserialize, Deserializer};
 use std::time::{SystemTime, UNIX_EPOCH};
 
@@ -8,6 +8,10 @@ use std::time::{SystemTime, UNIX_EPOCH};
 pub const CST_TIMEZONE: FixedOffset = FixedOffset::east_opt(8 * 3600).unwrap();
 
 /// Deserialize a string (1/0) to a boolean.
+///
+/// # Errors
+///
+/// If the string is not "1" or "0".
 pub fn deserialize_str_to_bool<'de, D>(deserializer: D) -> Result<bool, D::Error>
 where
     D: Deserializer<'de>,
@@ -21,7 +25,13 @@ where
 }
 
 /// Deserialize a string (YYYY-MM-DD HH:MM:SS) to a [`DateTime`] in China Standard Time.
-pub fn deserialize_str_to_datetime<'de, D>(deserializer: D) -> Result<DateTime<FixedOffset>, D::Error>
+///
+/// # Errors
+///
+/// If the string is not in the correct format ("YYYY-MM-DD HH:MM:SS") or is ambiguous in CST.
+pub fn deserialize_str_to_datetime<'de, D>(
+    deserializer: D,
+) -> Result<DateTime<FixedOffset>, D::Error>
 where
     D: Deserializer<'de>,
 {
@@ -36,6 +46,10 @@ where
 }
 
 /// Deserialize a string (YYYYMMDD) to a [`NaiveDate`].
+///
+/// # Errors
+///
+/// If the string is not in the correct format ("YYYYMMDD").
 pub fn deserialize_str_to_date<'de, D>(deserializer: D) -> Result<NaiveDate, D::Error>
 where
     D: Deserializer<'de>,
@@ -47,16 +61,23 @@ where
 }
 
 /// Format a [`NaiveDate`] to a string (YYYYMMDD).
+#[must_use]
 pub fn format_date_to_str(date: &NaiveDate) -> String {
     date.format("%Y%m%d").to_string()
 }
 
 /// Format a [`DateTime`] to a string (YYYY-MM-DD HH:MM:SS) without timezone.
+#[must_use]
 pub fn format_datetime_to_str(datetime: &DateTime<FixedOffset>) -> String {
     datetime.format("%Y-%m-%d %H:%M:%S").to_string()
 }
 
 /// Get current timestamp in milliseconds since UNIX epoch.
+///
+/// # Panics
+///
+/// If system time is before UNIX epoch.
+#[must_use]
 pub fn current_timestamp_millis() -> u128 {
     SystemTime::now()
         .duration_since(UNIX_EPOCH)

@@ -49,7 +49,10 @@ pub struct Course {
 #[serde(rename_all = "camelCase")]
 pub struct DailySchedule {
     /// Date of this schedule.
-    #[serde(rename = "dateStr", deserialize_with = "super::util::deserialize_str_to_date")]
+    #[serde(
+        rename = "dateStr",
+        deserialize_with = "super::util::deserialize_str_to_date"
+    )]
     pub date: NaiveDate,
     /// Schedules in this day.
     #[serde(rename = "schedData")]
@@ -67,13 +70,22 @@ pub struct Schedule {
     /// Unique id of this schedule.
     pub uuid: String,
     /// Check in status. Only work in [`query_daily_schedule`](IClass::query_daily_schedule), and does not work in [`query_weekly_schedule`](IClass::query_weekly_schedule) or when wrapped in [`DailySchedule`](DailySchedule).
-    #[serde(rename = "signStatus", deserialize_with = "super::util::deserialize_str_to_bool")]
+    #[serde(
+        rename = "signStatus",
+        deserialize_with = "super::util::deserialize_str_to_bool"
+    )]
     pub checked_in: bool,
     /// Begin time.
-    #[serde(rename = "classBeginTime", deserialize_with = "super::util::deserialize_str_to_datetime")]
+    #[serde(
+        rename = "classBeginTime",
+        deserialize_with = "super::util::deserialize_str_to_datetime"
+    )]
     pub begin_time: DateTime<FixedOffset>,
     /// End time.
-    #[serde(rename = "classEndTime", deserialize_with = "super::util::deserialize_str_to_datetime")]
+    #[serde(
+        rename = "classEndTime",
+        deserialize_with = "super::util::deserialize_str_to_datetime"
+    )]
     pub end_time: DateTime<FixedOffset>,
 }
 
@@ -127,7 +139,10 @@ impl IClass {
     /// # Errors
     ///
     /// See [`IClassError`].
-    pub async fn query_daily_schedule(&self, date: &NaiveDate) -> Result<Vec<Schedule>, IClassError> {
+    pub async fn query_daily_schedule(
+        &self,
+        date: &NaiveDate,
+    ) -> Result<Vec<Schedule>, IClassError> {
         let user_session = self.get_user_session()?;
         let url = self
             .api_root
@@ -222,10 +237,7 @@ impl fmt::Display for Schedule {
 
 impl fmt::Display for DailySchedule {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let Self {
-            date,
-            schedules,
-        } = self;
+        let Self { date, schedules } = self;
         writeln!(f, "Schedule on {date}:")?;
         for schedule in schedules {
             let Schedule {
@@ -239,7 +251,11 @@ impl fmt::Display for DailySchedule {
                 super::util::format_datetime_to_str(begin_time),
                 super::util::format_datetime_to_str(end_time),
             );
-            writeln!(f, "  [{begin_time} ~ {end_time}] id={id} uuid={uuid} {}", schedule.course.course_name)?;
+            writeln!(
+                f,
+                "  [{begin_time} ~ {end_time}] id={id} uuid={uuid} {}",
+                schedule.course.course_name
+            )?;
         }
         Ok(())
     }
