@@ -9,13 +9,14 @@
 mod checkin;
 mod login;
 mod query;
-mod util;
+pub mod util;
 
 pub use checkin::CheckInResult;
-use cyper::{Client, Error as CyperError};
 pub use login::UserSessionInfo;
 #[allow(deprecated, reason = "Re-exporting for potential use")]
 pub use query::{Course, Semester};
+
+use cyper::{Client, Error as CyperError};
 use serde::Deserialize;
 use url::{ParseError, Url};
 

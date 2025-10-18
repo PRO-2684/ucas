@@ -2,7 +2,7 @@
 
 use super::{IClass, IClassError, Response};
 use serde::Deserialize;
-use std::{fmt, time::{SystemTime, UNIX_EPOCH}};
+use std::fmt;
 
 /// Check-in response structure.
 #[derive(Clone, Debug, Deserialize)]
@@ -30,10 +30,7 @@ impl IClass {
         // /app/course/stu_scan_sign.action?timeTableId={schedule_uuid}&timestamp={timestamp}
         let user_session = self.get_user_session()?;
         let url = self.api_root.join("app/course/stu_scan_sign.action")?;
-        let timestamp = SystemTime::now()
-            .duration_since(UNIX_EPOCH)
-            .expect("Time went backwards")
-            .as_millis();
+        let timestamp = super::util::current_timestamp_millis();
         let response: Response<CheckInResult> = self
             .client
             .get(url)?
@@ -65,10 +62,7 @@ impl IClass {
         // /app/course/stu_sign_in.action?scheduleId={schedule_id}&timestamp={timestamp}
         let user_session = self.get_user_session()?;
         let url = self.api_root.join("app/course/stu_scan_sign.action")?;
-        let timestamp = SystemTime::now()
-            .duration_since(UNIX_EPOCH)
-            .expect("Time went backwards")
-            .as_millis();
+        let timestamp = super::util::current_timestamp_millis();
         let response: Response<CheckInResult> = self
             .client
             .get(url)?

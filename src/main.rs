@@ -1,6 +1,6 @@
 #![warn(clippy::all, clippy::nursery, clippy::pedantic, clippy::cargo)]
 
-use ucas_iclass::{IClass, IClassError};
+use ucas_iclass::{IClass, IClassError, util::CST_TIMEZONE};
 
 #[compio::main]
 async fn main() -> Result<(), IClassError> {
@@ -28,14 +28,16 @@ async fn main() -> Result<(), IClassError> {
         println!("  {course}");
     }
 
-    let daily_schedule = iclass.query_daily_schedule("20251017").await?;
-    println!("\nDaily schedule on 2025-10-17:");
+    let today = chrono::Utc::now().with_timezone(&CST_TIMEZONE).date_naive();
+
+    let daily_schedule = iclass.query_daily_schedule(&today).await?;
+    println!("\nDaily schedule on {today}:");
     for schedule in &daily_schedule {
         println!("  {schedule}");
     }
 
-    let weekly_schedule = iclass.query_weekly_schedule("20251017").await?;
-    println!("\nWeekly schedule for week of 2025-10-17:");
+    let weekly_schedule = iclass.query_weekly_schedule(&today).await?;
+    println!("\nWeekly schedule for week of {today}:");
     for daily_schedule in &weekly_schedule {
         println!("{daily_schedule}");
     }
@@ -50,10 +52,6 @@ async fn main() -> Result<(), IClassError> {
             println!("\nCheck-in result for schedule {id_or_uuid} (by uuid): {check_in_result}");
         }
     }
-
-    // Check in result for an outdated schedule by id: Object {"stuSignId": String("40790967"), "stuSignStatus": String("1")}
-    // Check in result for an outdated schedule by uuid: Object {"stuSignId": String("40221478"), "stuSignStatus": String("1")}
-    // Check in success: Object {"stuSignId": String("41254913"), "stuSignStatus": String("1")}
 
     Ok(())
 }

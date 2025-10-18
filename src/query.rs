@@ -1,5 +1,6 @@
 //! Query selected courses.
 
+use chrono::{DateTime, FixedOffset, NaiveDate};
 use std::fmt;
 
 use super::{IClass, IClassError, Response};
@@ -48,7 +49,8 @@ pub struct Course {
 #[serde(rename_all = "camelCase")]
 pub struct DailySchedule {
     /// Date of this schedule.
-    pub date_str: String,
+    #[serde(rename = "dateStr", deserialize_with = "super::util::deserialize_str_to_date")]
+    pub date: NaiveDate,
     /// Schedules in this day.
     #[serde(rename = "schedData")]
     pub schedules: Vec<Schedule>,
@@ -68,11 +70,11 @@ pub struct Schedule {
     #[serde(rename = "signStatus", deserialize_with = "super::util::deserialize_str_to_bool")]
     pub checked_in: bool,
     /// Begin time.
-    #[serde(rename = "classBeginTime")]
-    pub begin_time: String,
+    #[serde(rename = "classBeginTime", deserialize_with = "super::util::deserialize_str_to_datetime")]
+    pub begin_time: DateTime<FixedOffset>,
     /// End time.
-    #[serde(rename = "classEndTime")]
-    pub end_time: String,
+    #[serde(rename = "classEndTime", deserialize_with = "super::util::deserialize_str_to_datetime")]
+    pub end_time: DateTime<FixedOffset>,
 }
 
 impl IClass {
@@ -125,16 +127,17 @@ impl IClass {
     /// # Errors
     ///
     /// See [`IClassError`].
-    pub async fn query_daily_schedule(&self, date: &str) -> Result<Vec<Schedule>, IClassError> {
+    pub async fn query_daily_schedule(&self, date: &NaiveDate) -> Result<Vec<Schedule>, IClassError> {
         let user_session = self.get_user_session()?;
         let url = self
             .api_root
             .join("app/course/get_stu_course_sched.action")?;
+        let date_str = super::util::format_date_to_str(date);
         let response: Response<Vec<Schedule>> = self
             .client
             .get(url)?
             .header("sessionId", &user_session.session_id)?
-            .query(&[("id", user_session.id.as_str()), ("dateStr", date)])?
+            .query(&[("id", &user_session.id), ("dateStr", &date_str)])?
             .send()
             .await?
             .json()
@@ -155,17 +158,18 @@ impl IClass {
     /// See [`IClassError`].
     pub async fn query_weekly_schedule(
         &self,
-        date: &str,
+        date: &NaiveDate,
     ) -> Result<Vec<DailySchedule>, IClassError> {
         let user_session = self.get_user_session()?;
         let url = self
             .api_root
             .join("app/course/get_stu_course_sched_week.action")?;
+        let date_str = super::util::format_date_to_str(date);
         let response: Response<Vec<DailySchedule>> = self
             .client
             .get(url)?
             .header("sessionId", &user_session.session_id)?
-            .query(&[("id", user_session.id.as_str()), ("dateStr", date)])?
+            .query(&[("id", &user_session.id), ("dateStr", &date_str)])?
             .send()
             .await?
             .json()
@@ -204,6 +208,10 @@ impl fmt::Display for Schedule {
             ..
         } = self;
         let indicator = if *checked_in { "[✓]" } else { "[ ]" };
+        let (begin_time, end_time) = (
+            super::util::format_datetime_to_str(begin_time),
+            super::util::format_datetime_to_str(end_time),
+        );
         write!(
             f,
             "{indicator} [{begin_time} ~ {end_time}] id={id} uuid={uuid} {}",
@@ -215,10 +223,10 @@ impl fmt::Display for Schedule {
 impl fmt::Display for DailySchedule {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let Self {
-            date_str,
+            date,
             schedules,
         } = self;
-        writeln!(f, "Schedule on {date_str}:")?;
+        writeln!(f, "Schedule on {date}:")?;
         for schedule in schedules {
             let Schedule {
                 id,
@@ -227,6 +235,10 @@ impl fmt::Display for DailySchedule {
                 end_time,
                 ..
             } = schedule;
+            let (begin_time, end_time) = (
+                super::util::format_datetime_to_str(begin_time),
+                super::util::format_datetime_to_str(end_time),
+            );
             writeln!(f, "  [{begin_time} ~ {end_time}] id={id} uuid={uuid} {}", schedule.course.course_name)?;
         }
         Ok(())
