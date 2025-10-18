@@ -3,10 +3,14 @@
 use super::util::get_today;
 use argh::FromArgs;
 use chrono::NaiveDate;
+use url::Url;
 
 /// iClass API for UCAS.
 #[derive(Clone, Debug, FromArgs)]
 pub struct Cli {
+    /// API root URL, defaulting to UCAS iClass API root
+    #[argh(option, short = 'a')]
+    pub api_root: Option<Url>,
     /// the subcommand to run
     #[argh(subcommand)]
     pub subcommand: SubCommands,

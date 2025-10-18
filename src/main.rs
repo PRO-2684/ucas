@@ -11,7 +11,11 @@ use ucas_iclass::{
 #[compio::main]
 async fn main() -> Result<()> {
     let cli: Cli = argh::from_env();
-    let mut iclass = IClass::new();
+    let mut iclass = if let Some(api_root) = cli.api_root {
+        IClass::with_api_root(api_root)
+    } else {
+        IClass::new()
+    };
 
     match cli.subcommand {
         SubCommands::Login(Login {
