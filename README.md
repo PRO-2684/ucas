@@ -45,13 +45,13 @@ cargo install ucas-iclass
     ucas-iclass courses [-s <session-file>]
     ```
 
-- 📃 Schedule: Get schedule for a specific date or week.
+- 📃 Schedule: Get schedule for a specific date or week, defaulting to today.
 
     ```bash
     ucas-iclass schedule [-d <date>] [-w] [-s <session-file>]
     ```
 
-- ✅ Checkin: Check-in for a specific schedule by id or uuid.
+- ✅ Checkin: Check-in for a specific schedule by id or uuid, defaulting to current schedule if any.
 
     ```bash
     ucas-iclass checkin [<id_or_uuid>] [-s <session-file>]

@@ -20,9 +20,9 @@ pub enum SubCommands {
     Login(Login),
     /// List courses in current semester.
     Courses(Courses),
-    /// Get schedule for a specific date or week.
+    /// Get schedule for a specific date or week, defaulting to today.
     Schedule(Schedule),
-    /// Check-in for a specific schedule by id or uuid.
+    /// Check-in for a specific schedule by id or uuid, defaulting to current schedule if any.
     CheckIn(CheckIn),
 }
 
@@ -36,7 +36,7 @@ pub struct Login {
     /// the password
     #[argh(positional)]
     pub password: String,
-    /// the session file path to save to, default is "session.json"
+    /// the session file path to save to, defaulting to "session.json"
     #[argh(option, short = 's', default = "String::from(\"session.json\")")]
     pub session_file: String,
 }
@@ -45,16 +45,16 @@ pub struct Login {
 #[derive(Clone, Debug, FromArgs)]
 #[argh(subcommand, name = "courses")]
 pub struct Courses {
-    /// the session file path to load from, default is "session.json"
+    /// the session file path to load from, defaulting to "session.json"
     #[argh(option, short = 's', default = "String::from(\"session.json\")")]
     pub session_file: String,
 }
 
-/// Get schedule for a specific date or week.
+/// Get schedule for a specific date or week, defaulting to today.
 #[derive(Clone, Debug, FromArgs)]
 #[argh(subcommand, name = "schedule")]
 pub struct Schedule {
-    /// the date to get schedule for in "YYYY-MM-DD" format, default is today
+    /// the date to get schedule for in "YYYY-MM-DD" format, defaulting to today
     #[argh(
         option,
         short = 'd',
@@ -64,19 +64,19 @@ pub struct Schedule {
     /// show weekly schedule instead of daily schedule
     #[argh(switch, short = 'w')]
     pub weekly: bool,
-    /// the session file path to load from, default is "session.json"
+    /// the session file path to load from, defaulting to "session.json"
     #[argh(option, short = 's', default = "String::from(\"session.json\")")]
     pub session_file: String,
 }
 
-/// Check-in for a specific schedule by id or uuid.
+/// Check-in for a specific schedule by id or uuid, defaulting to current schedule if any.
 #[derive(Clone, Debug, FromArgs)]
 #[argh(subcommand, name = "checkin")]
 pub struct CheckIn {
-    /// the schedule id or uuid, default is to check-in current schedule if any
+    /// the schedule id or uuid, defaulting to current schedule if any
     #[argh(positional)]
     pub id_or_uuid: Option<String>,
-    /// the session file path to load from, default is "session.json"
+    /// the session file path to load from, defaulting to "session.json"
     #[argh(option, short = 's', default = "String::from(\"session.json\")")]
     pub session_file: String,
 }
