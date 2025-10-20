@@ -1,7 +1,7 @@
 #![warn(clippy::all, clippy::nursery, clippy::pedantic, clippy::cargo)]
 
 use anyhow::{Result, bail};
-use chrono::Utc;
+use chrono::{Utc, Duration};
 use ucas_iclass::{
     IClass, IClassError, Schedule as IClassSchedule,
     cli::{CheckIn, Cli, Courses, Login, Schedule, SubCommands},
@@ -104,13 +104,15 @@ async fn determine_current_schedule(
     let today = get_today();
     let daily_schedule = iclass.query_daily_schedule(&today).await?;
     let now = Utc::now();
+    let allowed_checkin_duration = Duration::minutes(30);
     for schedule in daily_schedule {
         let IClassSchedule {
             begin_time,
             end_time,
             ..
         } = &schedule;
-        if now >= *begin_time && now <= *end_time {
+        let checkin_time = *begin_time - allowed_checkin_duration;
+        if now >= checkin_time && now <= *end_time {
             return Ok(Some(schedule));
         }
     }
