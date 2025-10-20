@@ -19,8 +19,8 @@ pub use query::{Course, DailySchedule, Schedule, Semester};
 
 use cyper::{Client, Error as CyperError};
 use serde::Deserialize;
-use url::{ParseError, Url};
 use std::fmt::Debug;
+use url::{ParseError, Url};
 
 /// The root URL of the iClass platform.
 pub const API_ROOT: &str = "https://iclass.ucas.edu.cn:8181/";
@@ -56,7 +56,8 @@ pub enum IClassError {
 #[derive(Clone, Debug, Deserialize)]
 pub struct Response<T>
 where
-    T: Debug, {
+    T: Debug,
+{
     /// The status code of the response, 0 for success.
     #[serde(rename = "STATUS", deserialize_with = "util::deserialize_str_to_int")]
     pub status: i8,
@@ -120,7 +121,8 @@ impl From<ParseError> for IClassError {
 
 impl<T> Response<T>
 where
-    T: Debug,{
+    T: Debug,
+{
     /// Converts the response into a [`Result`], translating status codes into errors.
     ///
     /// # Errors
@@ -130,13 +132,11 @@ where
         if self.status == 0 {
             self.result.ok_or(IClassError::DataParsingError)
         } else {
-            Err(IClassError::ApiError(
-                if let Some(msg) = self.err_msg {
-                    msg
-                } else {
-                    format!("Unknown error, {self:?}")
-                },
-            ))
+            Err(IClassError::ApiError(if let Some(msg) = self.err_msg {
+                msg
+            } else {
+                format!("Unknown error, {self:?}")
+            }))
         }
     }
 }

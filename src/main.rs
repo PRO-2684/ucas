@@ -1,7 +1,7 @@
 #![warn(clippy::all, clippy::nursery, clippy::pedantic, clippy::cargo)]
 
 use anyhow::{Result, bail};
-use chrono::{Utc, Duration};
+use chrono::{Duration, Utc};
 use ucas_iclass::{
     IClass, IClassError, Schedule as IClassSchedule,
     cli::{CheckIn, Cli, Courses, Login, Schedule, SubCommands},
