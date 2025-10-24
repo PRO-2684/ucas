@@ -83,7 +83,7 @@ async fn main() -> Result<()> {
                 None => {
                     let current_schedule = determine_current_schedule(&mut iclass).await?;
                     let Some(schedule) = current_schedule else {
-                        bail!("No current schedule found for check-in");
+                        bail!("No current schedule eligible for check-in");
                     };
                     // Just use uuid for check-in
                     let uuid = &schedule.uuid;
@@ -105,6 +105,8 @@ async fn determine_current_schedule(
     let daily_schedule = iclass.query_daily_schedule(&today).await?;
     let now = Utc::now();
     let allowed_checkin_duration = Duration::minutes(30);
+
+    let mut candidate: Option<IClassSchedule> = None;
     for schedule in daily_schedule {
         let IClassSchedule {
             begin_time,
@@ -112,10 +114,16 @@ async fn determine_current_schedule(
             ..
         } = &schedule;
         let checkin_time = *begin_time - allowed_checkin_duration;
-        if now >= checkin_time && now <= *end_time {
-            return Ok(Some(schedule));
+        // The schedule should be within the check-in time window,
+        if now >= checkin_time && now <= *end_time
+            // not checked in yet,
+            && !schedule.checked_in
+            // and we should choose the schedule with smallest id if multiple available
+            && candidate.as_ref().map_or(true, |s| schedule.id < s.id)
+        {
+            candidate.replace(schedule);
         }
     }
 
-    Ok(None)
+    Ok(candidate)
 }
