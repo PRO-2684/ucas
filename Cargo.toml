@@ -1,45 +1,20 @@
-[package]
-name = "ucas-iclass"
-version = "0.1.2"
+[workspace]
+resolver = "2"
+members = [ "iclass"]
+
+[workspace.package]
 edition = "2024"
-readme = "README.md"
-description = "iClass API for UCAS"
-keywords = ["api", "ucas", "iclass", "university"]
-categories = ["command-line-utilities", "network-programming", "web-programming::http-client"]
-include = ["src", "README.md", "LICENSE"]
-repository = "https://github.com/PRO-2684/ucas-iclass"
+include = ["/src", "README.md"]
+repository = "https://github.com/PRO-2684/ucas"
 license = "MIT"
 authors = ["PRO-2684"]
 
-[dependencies]
-anyhow = { version = "1.0.100", optional = true }
-argh = { version = "0.1.13", optional = true, default-features = false, features = ["help"] }
-chrono = { version = "0.4.42", default-features = false, features = ["std", "now"] }
-compio = { version = "0.16.0", optional = true, features = ["macros"] }
+[workspace.dependencies]
+anyhow = { version = "1.0.100" }
+argh = { version = "0.1.13", default-features = false, features = ["help"] }
+compio = { version = "0.16.0", features = ["macros"] }
 cyper = { version = "0.5.0", features = ["json"] }
 serde = "1.0.228"
 serde_json = "1.0.145"
 thiserror = "2.0.17"
 url = "2.5.7"
-
-[[bin]]
-name = "ucas-iclass"
-required-features = ["cli"]
-
-[features]
-cli = ["anyhow", "argh", "compio"]
-
-[profile.release]
-debug = false     # Disable debug information in release builds.
-strip = true      # Automatically strip symbols from the binary.
-lto = true        # Enable link-time optimization.
-codegen-units = 1 # Set the number of codegen units to 1.
-
-[package.metadata.binstall]
-pkg-url = "{ repo }/releases/download/v{ version }/{ name }-v{ version }-{ target }{ archive-suffix }"
-bin-dir = "{ bin }{ binary-ext }"
-pkg-fmt = "tgz"
-disabled-strategies = ["quick-install"]
-
-[package.metadata.binstall.overrides.x86_64-pc-windows-msvc]
-pkg-fmt = "zip"
