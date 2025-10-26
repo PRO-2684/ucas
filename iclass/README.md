@@ -8,9 +8,6 @@
 [![Crates.io Total Downloads](https://img.shields.io/crates/d/ucas-iclass?logo=rust)](https://crates.io/crates/ucas-iclass)
 [![docs.rs](https://img.shields.io/docsrs/ucas-iclass?logo=rust)](https://docs.rs/ucas-iclass)
 
-> [!WARNING]
-> This repository is for learning purposes only. Use at your own risk.
-
 iClass API for UCAS. Should also work for other schools, but not guaranteed.
 
 ## 📥 Installation

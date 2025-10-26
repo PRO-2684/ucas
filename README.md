@@ -1,5 +1,8 @@
 # UCAS
 
+> [!WARNING]
+> This crate is for learning purposes only. Use at your own risk.
+
 This is a monorepo for UCAS-related APIs, consisting of the following members:
 
 - [`iclass`](./iclass/): iClass API for UCAS.
