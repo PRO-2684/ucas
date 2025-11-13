@@ -1,5 +1,7 @@
 //! Command line interface related logic.
 
+use std::str::FromStr;
+
 use super::util::get_today;
 use argh::FromArgs;
 use chrono::NaiveDate;
@@ -76,7 +78,57 @@ pub struct CheckIn {
     /// the schedule id or uuid, defaulting to current schedule if any
     #[argh(positional)]
     pub id_or_uuid: Option<String>,
+    /// timestamp in milliseconds or offset to current time in milliseconds
+    #[argh(option, short = 't')]
+    pub timestamp_or_offset: Option<String>,
     /// the session file path to load from, defaulting to "session.json"
     #[argh(option, short = 's', default = "String::from(\"session.json\")")]
     pub session_file: String,
+}
+
+/// Timestamp or offset.
+pub enum TimestampOrOffset {
+    /// A specific timestamp in milliseconds.
+    Timestamp(u128),
+    /// Positive offset to the current time in milliseconds.
+    Plus(u128),
+    /// Negative offset to the current time in milliseconds.
+    Minus(u128),
+}
+
+impl FromStr for TimestampOrOffset {
+    type Err = ();
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let s = s.trim();
+        let prefix = s.chars().next().unwrap_or_default();
+        let rest = if prefix == '+' || prefix == '-' {
+            &s[1..]
+        } else {
+            s
+        };
+        let value: u128 = rest.parse().map_err(|_| ())?;
+        match prefix {
+            '+' => Ok(Self::Plus(value)),
+            '-' => Ok(Self::Minus(value)),
+            _ => Ok(Self::Timestamp(value)),
+        }
+    }
+}
+
+impl TimestampOrOffset {
+    /// Resolve to a timestamp in milliseconds.
+    pub fn resolve(&self) -> u128 {
+        let current_timestamp = super::util::current_timestamp_millis();
+        match self {
+            Self::Timestamp(ts) => *ts,
+            Self::Plus(offset) => current_timestamp + offset,
+            Self::Minus(offset) => current_timestamp.saturating_sub(*offset),
+        }
+    }
+}
+
+impl Default for TimestampOrOffset {
+    fn default() -> Self {
+        Self::Plus(0)
+    }
 }

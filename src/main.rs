@@ -1,10 +1,12 @@
 #![warn(clippy::all, clippy::nursery, clippy::pedantic, clippy::cargo)]
 
+use std::str::FromStr;
+
 use anyhow::{Result, bail};
 use chrono::{Duration, Utc};
 use ucas_iclass::{
     IClass, IClassError, Schedule as IClassSchedule,
-    cli::{CheckIn, Cli, Courses, Login, Schedule, SubCommands},
+    cli::{CheckIn, Cli, Courses, Login, Schedule, SubCommands, TimestampOrOffset},
     util::get_today,
 };
 
@@ -61,9 +63,16 @@ async fn main() -> Result<()> {
         }
         SubCommands::CheckIn(CheckIn {
             id_or_uuid,
+            timestamp_or_offset,
             session_file,
         }) => {
             iclass.restore_session_from_file(&session_file)?;
+            let timestamp_or_offset = timestamp_or_offset.map(|s| TimestampOrOffset::from_str(&s))
+                .transpose()
+                .unwrap_or_default()
+                .unwrap_or_default();
+            let timestamp = timestamp_or_offset.resolve();
+            println!("Using timestamp (ms): {timestamp}");
             match id_or_uuid {
                 // id or uuid provided, determine which one it is
                 Some(id_or_uuid) => {
@@ -71,9 +80,9 @@ async fn main() -> Result<()> {
                     let (type_, result) = if id_or_uuid.len() == 32
                         && id_or_uuid.chars().all(|c| c.is_ascii_hexdigit())
                     {
-                        ("uuid", iclass.check_in_by_uuid(&id_or_uuid).await?)
+                        ("uuid", iclass.check_in_by_uuid(&id_or_uuid, timestamp).await?)
                     } else if id_or_uuid.chars().all(char::is_numeric) {
-                        ("id", iclass.check_in_by_id(&id_or_uuid).await?)
+                        ("id", iclass.check_in_by_id(&id_or_uuid, timestamp).await?)
                     } else {
                         bail!("Invalid id or uuid format: {id_or_uuid}");
                     };
@@ -88,7 +97,7 @@ async fn main() -> Result<()> {
                     // Just use uuid for check-in
                     let uuid = &schedule.uuid;
                     let name = &schedule.course.course_name;
-                    let result = iclass.check_in_by_uuid(&schedule.uuid).await?;
+                    let result = iclass.check_in_by_uuid(&schedule.uuid, timestamp).await?;
                     println!("Check-in by uuid for current schedule {uuid} ({name}): {result}");
                 }
             };
