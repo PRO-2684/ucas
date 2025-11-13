@@ -2,9 +2,9 @@
 
 use std::str::FromStr;
 
-use super::util::{current_timestamp_millis, get_today};
 use argh::FromArgs;
 use chrono::NaiveDate;
+use ucas_iclass::util::{current_timestamp_millis, get_today};
 use url::Url;
 
 /// iClass API for UCAS.

@@ -7,8 +7,6 @@
 #![allow(clippy::multiple_crate_versions, reason = "Dependency issues")]
 
 mod checkin;
-#[cfg(feature = "cli")]
-pub mod cli;
 mod login;
 mod query;
 pub mod util;

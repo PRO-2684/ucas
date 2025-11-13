@@ -1,14 +1,12 @@
 #![warn(clippy::all, clippy::nursery, clippy::pedantic, clippy::cargo)]
 
-use std::str::FromStr;
+mod cli;
 
 use anyhow::{Result, bail};
 use chrono::{Duration, Utc};
-use ucas_iclass::{
-    IClass, IClassError, Schedule as IClassSchedule,
-    cli::{CheckIn, Cli, Courses, Login, Schedule, SubCommands, TimestampOrOffset},
-    util::get_today,
-};
+use cli::{CheckIn, Cli, Courses, Login, Schedule, SubCommands, TimestampOrOffset};
+use std::str::FromStr;
+use ucas_iclass::{IClass, IClassError, Schedule as IClassSchedule, util::get_today};
 
 #[compio::main]
 async fn main() -> Result<()> {
@@ -67,11 +65,13 @@ async fn main() -> Result<()> {
             session_file,
         }) => {
             iclass.restore_session_from_file(&session_file)?;
-            let timestamp_or_offset = timestamp_or_offset
-                .map(|s| TimestampOrOffset::from_str(&s))
-                .transpose()
-                .unwrap_or_default()
-                .unwrap_or_default();
+            let timestamp_or_offset = match timestamp_or_offset {
+                Some(s) => match TimestampOrOffset::from_str(&s) {
+                    Ok(t) => t,
+                    Err(_) => bail!("Invalid timestamp or offset: {s}"),
+                },
+                None => TimestampOrOffset::default(),
+            };
             let timestamp = timestamp_or_offset.resolve();
             println!("Using timestamp (ms): {timestamp}");
             match id_or_uuid {
