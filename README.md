@@ -57,6 +57,21 @@ cargo install ucas-iclass
     ucas-iclass checkin [<id_or_uuid>] [-t <timestamp-or-offset>] [-s <session-file>]
     ```
 
+## 🤔 Common Problems
+
+### `Error: API error: 二维码已失效！`
+
+This is likely because:
+
+- The iClass system's clock is far ahead, or
+- Your system's clock is far behind.
+
+Thus, timestamp calculated from your system will be treated as outdated by the iClass system, Fortunately, you can fix this by increasing the timestamp offset to an appropriate value, like $+30000$:
+
+```bash
+ucas-iclass checkin -t +30000
+```
+
 ## ☑️ TODO
 
 - [x] Customize api root for cli.

@@ -67,7 +67,8 @@ async fn main() -> Result<()> {
             session_file,
         }) => {
             iclass.restore_session_from_file(&session_file)?;
-            let timestamp_or_offset = timestamp_or_offset.map(|s| TimestampOrOffset::from_str(&s))
+            let timestamp_or_offset = timestamp_or_offset
+                .map(|s| TimestampOrOffset::from_str(&s))
                 .transpose()
                 .unwrap_or_default()
                 .unwrap_or_default();
@@ -80,7 +81,10 @@ async fn main() -> Result<()> {
                     let (type_, result) = if id_or_uuid.len() == 32
                         && id_or_uuid.chars().all(|c| c.is_ascii_hexdigit())
                     {
-                        ("uuid", iclass.check_in_by_uuid(&id_or_uuid, timestamp).await?)
+                        (
+                            "uuid",
+                            iclass.check_in_by_uuid(&id_or_uuid, timestamp).await?,
+                        )
                     } else if id_or_uuid.chars().all(char::is_numeric) {
                         ("id", iclass.check_in_by_id(&id_or_uuid, timestamp).await?)
                     } else {

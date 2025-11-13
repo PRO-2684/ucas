@@ -64,7 +64,11 @@ impl IClass {
     /// # Panics
     ///
     /// This function will panic if system time is before [`UNIX_EPOCH`].
-    pub async fn check_in_by_id(&self, schedule_id: &str, timestamp: u128) -> Result<CheckInResult, IClassError> {
+    pub async fn check_in_by_id(
+        &self,
+        schedule_id: &str,
+        timestamp: u128,
+    ) -> Result<CheckInResult, IClassError> {
         // /app/course/stu_sign_in.action?scheduleId={schedule_id}&timestamp={timestamp}
         let user_session = self.get_user_session()?;
         let url = self.api_root.join("app/course/stu_scan_sign.action")?;

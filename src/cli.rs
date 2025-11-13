@@ -2,7 +2,7 @@
 
 use std::str::FromStr;
 
-use super::util::get_today;
+use super::util::{current_timestamp_millis, get_today};
 use argh::FromArgs;
 use chrono::NaiveDate;
 use url::Url;
@@ -78,7 +78,7 @@ pub struct CheckIn {
     /// the schedule id or uuid, defaulting to current schedule if any
     #[argh(positional)]
     pub id_or_uuid: Option<String>,
-    /// timestamp in milliseconds or offset to current time in milliseconds
+    /// timestamp or offset (prefixed with '+' or '-') to current time in milliseconds, defaulting to +0 (current time)
     #[argh(option, short = 't')]
     pub timestamp_or_offset: Option<String>,
     /// the session file path to load from, defaulting to "session.json"
@@ -118,11 +118,10 @@ impl FromStr for TimestampOrOffset {
 impl TimestampOrOffset {
     /// Resolve to a timestamp in milliseconds.
     pub fn resolve(&self) -> u128 {
-        let current_timestamp = super::util::current_timestamp_millis();
         match self {
             Self::Timestamp(ts) => *ts,
-            Self::Plus(offset) => current_timestamp + offset,
-            Self::Minus(offset) => current_timestamp.saturating_sub(*offset),
+            Self::Plus(offset) => current_timestamp_millis() + offset,
+            Self::Minus(offset) => current_timestamp_millis().saturating_sub(*offset),
         }
     }
 }
